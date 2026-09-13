@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "portfolio",
+  "main": "./worker/index.js",
+  "compatibility_date": "2026-09-12",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    // Everything except /api is served straight from dist/ without running the Worker.
+    "run_worker_first": ["/api/*"],
+  },
+  // GITHUB_TOKEN is a secret, set per environment:
+  //   npx wrangler secret put GITHUB_TOKEN
+  //   npx wrangler secret put GITHUB_TOKEN --env qa
+  "env": {
+    // Staging. Deployed from the qa branch as a separate Worker, portfolio-qa.
+    "qa": {
+      "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS",
+        "not_found_handling": "404-page",
+        "run_worker_first": ["/api/*"],
+      },
+    },
+  },
+}

@@ -1,0 +1,5 @@
+# Local secrets for `npx wrangler dev`. Copy to .dev.vars, which is git-ignored.
+#
+# Fine-grained GitHub token: public repositories only, no extra permissions,
+# with an expiry date.
+GITHUB_TOKEN=
