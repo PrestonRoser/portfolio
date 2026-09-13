@@ -2,7 +2,7 @@ export const site = {
   name: "Preston Roser",
   url: "https://prestonroser.dev",
   description:
-    "Computer Science student at Arizona State University and co-founder of HANDS. Software automation, cloud systems, CI/CD and full-stack web.",
+    "Computer Science student at Arizona State University and co-founder of HANDS. Software automation, cloud systems, CI/CD, and full-stack web.",
   email: "prestonroser@gmail.com",
   location: {
     city: "Greeley, Colorado",
