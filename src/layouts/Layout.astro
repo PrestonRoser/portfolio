@@ -1,0 +1,105 @@
+---
+import "@fontsource-variable/jetbrains-mono";
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { ACCENTS, FLAVORS, site } from "../data/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+  type?: "website" | "article";
+  jsonLd?: Record<string, unknown>;
+}
+
+const { title, description = site.description, type = "website", jsonLd } = Astro.props;
+
+const pageTitle = title ? `${title} · ${site.name}` : site.name;
+const canonical = new URL(Astro.url.pathname, site.url).href;
+const ogImage = new URL("/og.png", site.url).href;
+// Escape "<" so nothing in the data can close the script tag early.
+const structuredData = jsonLd && JSON.stringify(jsonLd).replaceAll("<", "\\u003c");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <!--
+      Runs before first paint so the page never flashes the wrong theme. A
+      saved accent wins; otherwise one is picked per visit, different from the
+      last visit's.
+    -->
+    <script is:inline define:vars={{ flavors: FLAVORS, accents: ACCENTS }}>
+      try {
+        const root = document.documentElement;
+        const flavor = localStorage.getItem("flavor");
+        if (flavors.includes(flavor)) root.classList.add(flavor);
+
+        let accent = localStorage.getItem("accent");
+        if (!accents.includes(accent)) {
+          accent = sessionStorage.getItem("accent-roll");
+          if (!accents.includes(accent)) {
+            const last = localStorage.getItem("accent-last");
+            const pool = accents.filter((a) => a !== last);
+            accent = pool[Math.floor(Math.random() * pool.length)];
+            sessionStorage.setItem("accent-roll", accent);
+            localStorage.setItem("accent-last", accent);
+          }
+        }
+        root.dataset.accent = accent;
+      } catch {
+        // Storage blocked (private window, site data off): stick with the OS default.
+      }
+    </script>
+    <link
+      rel="preload"
+      href="/fonts/satoshi/Satoshi-Variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {structuredData && (
+      <script is:inline type="application/ld+json" set:html={structuredData}></script>
+    )}
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-accent focus:px-4 focus:py-2 focus:text-on-accent"
+    >
+      Skip to content
+    </a>
+    <Header />
+    <main id="main" class="container-page w-full flex-1 pb-20">
+      <slot />
+    </main>
+    <Footer />
+    {site.analytics.cloudflareToken && (
+      <script
+        is:inline
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={JSON.stringify({ token: site.analytics.cloudflareToken })}
+      ></script>
+    )}
+  </body>
+</html>

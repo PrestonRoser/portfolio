@@ -1,0 +1,34 @@
+---
+import { buildCommit } from "../lib/build";
+import { site } from "../data/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-surface0 bg-crust">
+  <div class="container-page flex flex-wrap items-center gap-x-4 gap-y-2 py-6 font-code text-[0.8125rem] text-subtext0">
+    <span>
+      © {year} {site.name}
+    </span>
+    <span>{site.location.short}</span>
+    {buildCommit && <span title="Commit this build came from">{buildCommit}</span>}
+    <span class="flex gap-4 sm:ml-auto">
+      <a
+        class="transition-colors hover:text-text"
+        href={site.links.github}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        GitHub
+      </a>
+      <a
+        class="transition-colors hover:text-text"
+        href={site.links.linkedin}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        LinkedIn
+      </a>
+    </span>
+  </div>
+</footer>

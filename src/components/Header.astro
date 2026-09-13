@@ -1,0 +1,65 @@
+---
+import ThemePicker from "./ThemePicker.svelte";
+import { pics } from "../data/pics";
+import { site } from "../data/site";
+
+const { pathname } = Astro.url;
+const segments = pathname.split("/").filter(Boolean);
+
+const nav =
+  pics.length > 0
+    ? [...site.nav.slice(0, -1), { href: "/pics", label: "Pics" }, ...site.nav.slice(-1)]
+    : site.nav;
+---
+
+<header class="border-b border-surface0 bg-mantle">
+  <div class="container-page flex flex-wrap items-center gap-x-8 gap-y-3 py-3">
+    <nav aria-label="Breadcrumb" class="font-code text-small text-subtext0">
+      <ol class="flex flex-wrap items-center gap-1.5">
+        <li>
+          <a href="/" class="transition-colors hover:text-text">
+            ~
+          </a>
+        </li>
+        {segments.map((segment, i) => (
+          <li class="flex items-center gap-1.5">
+            <span aria-hidden="true">/</span>
+            {i === segments.length - 1 ? (
+              <span class="text-accent-ink" aria-current="page">
+                {segment}
+              </span>
+            ) : (
+              <a
+                href={`/${segments.slice(0, i + 1).join("/")}`}
+                class="transition-colors hover:text-text"
+              >
+                {segment}
+              </a>
+            )}
+          </li>
+        ))}
+        <li aria-hidden="true">/</li>
+      </ol>
+    </nav>
+
+    <nav aria-label="Main" class="flex items-center gap-5 text-small sm:ml-auto">
+      {nav.map((item) => {
+        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        return (
+          <a
+            href={item.href}
+            class:list={[
+              "transition-colors hover:text-text",
+              active ? "text-accent-ink" : "text-subtext1",
+            ]}
+            aria-current={active ? "page" : undefined}
+          >
+            {item.label}
+          </a>
+        );
+      })}
+    </nav>
+
+    <ThemePicker client:idle />
+  </div>
+</header>
