@@ -1,0 +1,41 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ContactLinks from "../components/ContactLinks.astro";
+import Icon from "../components/Icon.astro";
+import { site } from "../data/site";
+---
+
+<Layout title="Contact" description={`Get in touch with ${site.name}.`}>
+  <section class="pt-12 sm:pt-16">
+    <h1 class="t-display text-h1">Contact</h1>
+    <p class="mt-3 max-w-[60ch] text-lead text-subtext1">
+      Email is the best way to reach me. I'm looking for 2026–27 internships and I'm always up for a
+      conversation about HANDS.
+    </p>
+  </section>
+
+  <div class="mt-8">
+    <ContactLinks />
+  </div>
+
+  <div class="mt-3 grid gap-3 sm:grid-cols-2">
+    <a class="reveal-card" href={`mailto:${site.email}?subject=Internship`}>
+      <span class="font-semibold">Internships</span>
+      <span class="text-small text-subtext1">
+        Open to 2026–27 roles in software engineering, backend and cloud infrastructure.
+      </span>
+      <span class="reveal">
+        Send an email <Icon name="arrow" />
+      </span>
+    </a>
+    <a class="reveal-card" href={site.links.hands} target="_blank" rel="noopener noreferrer">
+      <span class="font-semibold">HANDS</span>
+      <span class="text-small text-subtext1">
+        Hands-on STEM kits for K–12 classrooms, for school pilots and partnerships.
+      </span>
+      <span class="reveal">
+        Visit handslearning.com <Icon name="arrow" />
+      </span>
+    </a>
+  </div>
+</Layout>

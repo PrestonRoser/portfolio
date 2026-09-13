@@ -1,0 +1,29 @@
+---
+import { linkedinPosts } from "../data/linkedin";
+import { formatDate } from "../lib/content";
+
+interface Props {
+  limit?: number;
+  excerpts?: boolean;
+}
+
+const { limit, excerpts = false } = Astro.props;
+const posts = limit ? linkedinPosts.slice(0, limit) : linkedinPosts;
+---
+
+<ul class="post-list">
+  {posts.map((post) => (
+    <li>
+      <a href={post.url} target="_blank" rel="noopener noreferrer">
+        <time
+          class="font-code text-[0.75rem] tabular-nums text-subtext0"
+          datetime={post.date.toISOString()}
+        >
+          {formatDate(post.date)}
+        </time>
+        <span class="post-title">{post.title}</span>
+        {excerpts && <span class="text-small text-subtext1">{post.excerpt}</span>}
+      </a>
+    </li>
+  ))}
+</ul>

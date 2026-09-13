@@ -1,0 +1,35 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+  heading?: "h2" | "h3";
+  class?: string;
+}
+
+const { project, heading: Heading = "h3", class: className } = Astro.props;
+const { title, summary, tags, context, period } = project.data;
+const href = `/projects/${project.id}`;
+---
+
+<article class:list={["tile group flex flex-col gap-4", className]}>
+  <a class="cover" href={href} tabindex="-1" aria-hidden="true">
+    <span class="cover-path">~/projects/{project.id}</span>
+  </a>
+  <div>
+    <Heading class="text-h3 font-semibold">
+      <a class="transition-colors hover:text-accent-ink" href={href}>
+        {title}
+      </a>
+    </Heading>
+    <p class="mt-1 font-code text-[0.75rem] text-subtext0">
+      {context} · {period}
+    </p>
+  </div>
+  <p class="text-small text-subtext1">{summary}</p>
+  <p class="mt-auto flex flex-wrap gap-1.5">
+    {tags.map((tag) => (
+      <span class="tag">{tag}</span>
+    ))}
+  </p>
+</article>

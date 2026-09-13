@@ -1,0 +1,34 @@
+---
+import { education, experience } from "../data/experience";
+---
+
+<ol class="timeline mt-5">
+  {experience.map((role) => (
+    <li>
+      <p class="font-semibold">
+        {role.url ? (
+          <a
+            class="transition-colors hover:text-accent-ink"
+            href={role.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {role.org}
+          </a>
+        ) : (
+          role.org
+        )}
+      </p>
+      <p class="text-small text-subtext1">{role.role}</p>
+      <p class="mt-1 font-code text-[0.75rem] text-subtext0">
+        {role.start} – {role.end ?? "Present"} · {role.place}
+      </p>
+      <p class="mt-2 text-small text-subtext1">{role.summary}</p>
+    </li>
+  ))}
+</ol>
+<p class="mt-6 border-t border-surface0 pt-4 text-small text-subtext1">
+  <span class="font-semibold text-text">{education.degree}</span>{" "}
+  <span class="text-subtext0">·</span> {education.school}{" "}
+  <span class="font-code text-[0.75rem] text-subtext0">(expected {education.end})</span>
+</p>

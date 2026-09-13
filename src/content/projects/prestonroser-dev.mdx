@@ -1,0 +1,19 @@
+---
+title: prestonroser.dev
+summary: This site. Static Astro pages with Svelte islands for the live parts, on Cloudflare Workers.
+context: Personal project
+period: Fall 2026
+tags: ["astro", "svelte", "tailwind", "cloudflare workers"]
+order: 4
+---
+
+The site you're looking at.
+
+- Pages are static HTML. JavaScript only loads for the parts that change: the theme picker, the
+  map, the clock and the GitHub tiles.
+- Theme colours are generated from the Catppuccin palette. Accent colours used as text get
+  lightened or darkened until every flavour and accent combination passes WCAG AA contrast.
+- Recent commits come from a Cloudflare Worker. Its GitHub token only exists as a runtime secret,
+  responses are rebuilt from validated fields, and a test suite tries to get the token out of it
+  on every push.
+- A Content Security Policy that allows inline scripts only by hash.

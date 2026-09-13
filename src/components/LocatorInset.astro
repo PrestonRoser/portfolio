@@ -1,0 +1,15 @@
+---
+import { HEIGHT, WIDTH, project, regionPath } from "../lib/locator";
+import { site } from "../data/site";
+
+const [x, y] = project([site.location.lng, site.location.lat]);
+---
+
+<svg class="locator" viewBox={`-2 -2 ${WIDTH + 4} ${(HEIGHT + 4).toFixed(1)}`} aria-hidden="true">
+  <rect class="locator-state" width={WIDTH} height={HEIGHT.toFixed(1)}></rect>
+  <path class="locator-region" d={regionPath}></path>
+  <circle class="locator-city" cx={x.toFixed(1)} cy={y.toFixed(1)} r="2.8"></circle>
+  <text class="locator-text" x="5" y={(HEIGHT - 6).toFixed(1)}>
+    CO
+  </text>
+</svg>

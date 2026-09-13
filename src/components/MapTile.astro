@@ -1,0 +1,32 @@
+---
+import LocalClock from "./LocalClock.svelte";
+import LocationMap from "./LocationMap.svelte";
+import LocatorInset from "./LocatorInset.astro";
+import { site } from "../data/site";
+
+const { location } = site;
+---
+
+<section class="tile flex flex-col gap-3 md:col-span-2" aria-labelledby="location-title">
+  <h2 id="location-title" class="t-label">
+    Currently based in
+  </h2>
+  <div class="map-frame">
+    <LocationMap
+      client:visible
+      lat={location.lat}
+      lng={location.lng}
+      zoom={location.zoom}
+      label={`Map of ${location.city}`}
+    />
+    <LocatorInset />
+  </div>
+  <div class="flex items-baseline justify-between gap-3">
+    <p class="font-semibold">{location.city}</p>
+    <LocalClock client:idle timeZone={location.timeZone} />
+  </div>
+  <p class="flex items-center gap-2 text-small text-subtext1">
+    <span class="noco-key" aria-hidden="true"></span>
+    {location.region}
+  </p>
+</section>

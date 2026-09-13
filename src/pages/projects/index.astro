@@ -1,0 +1,16 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import { getProjects } from "../../lib/content";
+
+const projects = await getProjects();
+---
+
+<Layout title="Projects" description="Things I've built: web, software and class projects.">
+  <h1 class="t-display pt-12 text-h1 sm:pt-16">Projects</h1>
+  <div class="mt-8 grid gap-3 md:grid-cols-2">
+    {projects.map((project) => (
+      <ProjectCard project={project} heading="h2" />
+    ))}
+  </div>
+</Layout>

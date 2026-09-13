@@ -1,0 +1,17 @@
+---
+import { skills } from "../data/skills";
+---
+
+<div class="marquee">
+  <ul class="marquee-track">
+    {skills.map((skill) => (
+      <li>{skill}</li>
+    ))}
+  </ul>
+  {/* The copy only exists to make the loop seamless, so screen readers skip it. */}
+  <ul class="marquee-track" aria-hidden="true">
+    {skills.map((skill) => (
+      <li>{skill}</li>
+    ))}
+  </ul>
+</div>

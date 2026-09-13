@@ -1,0 +1,166 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CommitsTile from "../components/CommitsTile.svelte";
+import ContactLinks from "../components/ContactLinks.astro";
+import Icon from "../components/Icon.astro";
+import LanguagesTile from "../components/LanguagesTile.svelte";
+import MapTile from "../components/MapTile.astro";
+import Marquee from "../components/Marquee.astro";
+import PostList from "../components/PostList.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import Timeline from "../components/Timeline.astro";
+import { pics } from "../data/pics";
+import { site } from "../data/site";
+import { getProjects } from "../lib/content";
+import { readSnapshot } from "../lib/snapshot";
+
+const featured = (await getProjects()).filter((project) => project.data.featured).slice(0, 3);
+const snapshot = readSnapshot();
+
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: site.name,
+  url: site.url,
+  image: new URL("/og.png", site.url).href,
+  jobTitle: "Co-Founder & Engineering Lead",
+  worksFor: { "@type": "Organization", name: "HANDS", url: site.links.hands },
+  affiliation: { "@type": "CollegeOrUniversity", name: "Arizona State University" },
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Greeley",
+    addressRegion: "CO",
+    addressCountry: "US",
+  },
+  sameAs: [site.links.github, site.links.linkedin],
+};
+---
+
+<Layout jsonLd={person}>
+  <div class="grid grid-cols-1 gap-3 pt-8 sm:pt-12 md:grid-cols-6">
+    <section class="tile flex flex-col gap-5 md:col-span-4" aria-labelledby="hero-title">
+      <p class="t-label">About</p>
+      <h1 id="hero-title" class="t-display text-display">
+        Hey, I'm Preston.
+      </h1>
+      <p class="max-w-[58ch] text-lead text-subtext1">
+        I study Computer Science at Arizona State University. I also co-founded{" "}
+        <a class="link" href={site.links.hands} target="_blank" rel="noopener noreferrer">
+          HANDS
+        </a>{" "}
+        and lead engineering on its hands-on STEM kits for K–12 classrooms. Day to day I work across
+        software automation, cloud systems, CI/CD and full-stack web.
+      </p>
+      <p class="text-small text-subtext1">
+        Looking for 2026–27 software engineering, backend and cloud infrastructure internships.
+      </p>
+      <div class="mt-auto flex flex-wrap gap-2 pt-2">
+        <a class="btn btn-fill" href="/projects">
+          View projects
+        </a>
+        <a class="btn btn-ghost" href={`mailto:${site.email}`}>
+          <Icon name="mail" />
+          Email
+        </a>
+        <a class="btn btn-ghost" href={site.links.github} target="_blank" rel="noopener noreferrer">
+          <Icon name="github" />
+          GitHub
+        </a>
+        <a
+          class="btn btn-ghost"
+          href={site.links.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Icon name="linkedin" />
+          LinkedIn
+        </a>
+      </div>
+    </section>
+
+    <MapTile />
+
+    <section class="tile md:col-span-3">
+      <CommitsTile client:visible commits={snapshot.commits} profile={site.links.github} />
+    </section>
+
+    <section class="tile md:col-span-3">
+      <LanguagesTile client:visible languages={snapshot.languages} />
+    </section>
+
+    <section class="tile md:col-span-6" aria-labelledby="skills-title">
+      <h2 id="skills-title" class="t-label">
+        What I work with
+      </h2>
+      <div class="mt-4">
+        <Marquee />
+      </div>
+    </section>
+
+    {featured.map((project) => (
+      <ProjectCard project={project} class="md:col-span-2" />
+    ))}
+
+    <section class="tile md:col-span-3" aria-labelledby="experience-title">
+      <h2 id="experience-title" class="t-label">
+        Experience
+      </h2>
+      <Timeline />
+    </section>
+
+    <section class="tile md:col-span-3" aria-labelledby="posts-title">
+      <div class="flex items-center justify-between gap-2">
+        <h2 id="posts-title" class="t-label">
+          Latest posts
+        </h2>
+        <a class="link text-small" href="/posts">
+          All posts
+        </a>
+      </div>
+      <div class="mt-4">
+        <PostList limit={6} />
+      </div>
+    </section>
+
+    {pics.length > 0 && (
+      <section class="tile md:col-span-6" aria-labelledby="pics-title">
+        <div class="flex items-center justify-between gap-2">
+          <h2 id="pics-title" class="t-label">
+            Pics
+          </h2>
+          <a class="link text-small" href="/pics">
+            All photos
+          </a>
+        </div>
+        <div class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {pics.slice(0, 4).map((pic) => (
+            <img
+              src={pic.src}
+              srcset={pic.srcset}
+              sizes="(min-width: 48rem) 25vw, 50vw"
+              width={pic.width}
+              height={pic.height}
+              alt={pic.alt}
+              loading="lazy"
+              decoding="async"
+              class="aspect-square w-full rounded-control border border-surface0 object-cover"
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="tile md:col-span-6" aria-labelledby="contact-title">
+      <h2 id="contact-title" class="t-label">
+        Contact
+      </h2>
+      <p class="t-display mt-3 text-h2">Let's build something.</p>
+      <p class="mt-2 max-w-[60ch] text-small text-subtext1">
+        Email is the fastest way to reach me.
+      </p>
+      <div class="mt-6">
+        <ContactLinks />
+      </div>
+    </section>
+  </div>
+</Layout>

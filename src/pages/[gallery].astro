@@ -1,0 +1,35 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { pics } from "../data/pics";
+
+// Only builds /pics once there are photos to put on it.
+export function getStaticPaths() {
+  return pics.length > 0 ? [{ params: { gallery: "pics" } }] : [];
+}
+---
+
+<Layout title="Pics" description="Photos from around Northern Colorado and the workbench.">
+  <h1 class="t-display pt-12 text-h1 sm:pt-16">Pics</h1>
+  <ul class="mt-8 columns-2 gap-3 md:columns-3">
+    {pics.map((pic) => (
+      <li class="mb-3 break-inside-avoid">
+        <figure>
+          <img
+            src={pic.src}
+            srcset={pic.srcset}
+            sizes="(min-width: 48rem) 33vw, 50vw"
+            width={pic.width}
+            height={pic.height}
+            alt={pic.alt}
+            loading="lazy"
+            decoding="async"
+            class="h-auto w-full rounded-control border border-surface0"
+          />
+          {pic.caption && (
+            <figcaption class="mt-1.5 text-[0.8125rem] text-subtext0">{pic.caption}</figcaption>
+          )}
+        </figure>
+      </li>
+    ))}
+  </ul>
+</Layout>
