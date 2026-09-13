@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, qa, main]
+  push:
+    branches: [dev]
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  flow:
+    name: Branch flow
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      # Changes move dev -> qa -> main. hotfix/* branches can go straight to qa
+      # or main, and main can be merged back down into qa and dev afterwards.
+      - name: Check the source branch is allowed to merge here
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+        run: |
+          case "$BASE" in
+            main) [[ "$HEAD" == qa || "$HEAD" == hotfix/* ]] ;;
+            qa) [[ "$HEAD" == dev || "$HEAD" == main || "$HEAD" == hotfix/* ]] ;;
+            *) true ;;
+          esac || {
+            echo "::error::$HEAD can't be merged into $BASE. Promote dev -> qa -> main, or use a hotfix/* branch."
+            exit 1
+          }
+
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - run: npm run format:check
+      - name: Worker tests
+        run: npm test
+      - name: Type check
+        run: npm run check
+      - name: Build (includes security headers and secret scan)
+        run: npm run build
