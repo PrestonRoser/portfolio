@@ -25,6 +25,7 @@ export const site = {
     cloudflareToken: "",
   },
   nav: [
+    { href: "/about", label: "About" },
     { href: "/projects", label: "Projects" },
     { href: "/posts", label: "Posts" },
     { href: "/contact", label: "Contact" },

@@ -1,0 +1,172 @@
+---
+import { Image } from "astro:assets";
+import Layout from "../layouts/Layout.astro";
+import Icon from "../components/Icon.astro";
+import { education } from "../data/experience";
+import { pics } from "../data/pics";
+import { site } from "../data/site";
+
+// A photo at src/assets/about/portrait.webp (or .jpg/.png) shows up beside the intro.
+const portraits = import.meta.glob<{ default: ImageMetadata }>(
+  "../assets/about/portrait.{avif,webp,png,jpg,jpeg}",
+  { eager: true },
+);
+const portrait = Object.values(portraits)[0]?.default;
+
+const demoDayPost = "https://www.linkedin.com/feed/update/urn:li:activity:7398547020606713856/";
+
+const facts = [
+  { label: "Based in", value: site.location.short },
+  { label: "Studying", value: `${education.degree}, ${education.school}` },
+  { label: "Expected graduation", value: education.end },
+  { label: "Building", value: "HANDS, since Aug 2025" },
+  { label: "HANDS classrooms", value: "8 in the Phoenix area" },
+];
+
+const links = [
+  { href: `mailto:${site.email}`, label: "Email", icon: "mail" },
+  { href: site.links.github, label: "GitHub", icon: "github" },
+  { href: site.links.linkedin, label: "LinkedIn", icon: "linkedin" },
+] as const;
+---
+
+<Layout
+  title="About"
+  description="Preston Roser: CS student at Arizona State University and co-founder of HANDS, a STEM education startup."
+>
+  <header class="flex flex-col gap-6 pt-12 sm:flex-row sm:items-center sm:pt-16">
+    {portrait && (
+      <Image
+        src={portrait}
+        alt="Preston Roser"
+        widths={[112, 224]}
+        sizes="112px"
+        loading="eager"
+        class="size-28 flex-none rounded-full border border-surface0 object-cover"
+      />
+    )}
+    <div>
+      <h1 class="t-display text-h1">About</h1>
+      <p class="mt-3 max-w-[60ch] text-lead text-subtext1">
+        I'm Preston, a Computer Science student at Arizona State University and a co-founder of
+        HANDS, a STEM education startup. Most of my time goes to school, software, and building
+        hands-on kits for K–12 classrooms.
+      </p>
+    </div>
+  </header>
+
+  <div class="mt-10 grid items-start gap-3 md:grid-cols-3">
+    <div class="flex flex-col gap-3 md:col-span-2">
+      <section class="tile" aria-labelledby="hands-title">
+        <h2 id="hands-title" class="t-label">
+          HANDS
+        </h2>
+        <div class="prose mt-4">
+          <p>
+            I co-founded HANDS in August 2025 to turn abstract science into something students can
+            hold. We make hands-on STEM kits with 3D-printed hardware for K–12 classrooms. I lead
+            engineering, which means the kits themselves and{" "}
+            <a href="/projects/hands-website">our website</a>.
+          </p>
+          <p>
+            In November 2025 we{" "}
+            <a href={demoDayPost} target="_blank" rel="noopener noreferrer">
+              pitched HANDS at ASU's Venture Devils Demo Day
+            </a>{" "}
+            and came away with $6,000 in seed funding through the Edson E+I program.
+          </p>
+          <p>
+            Since then we've kept iterating on the kits. They're in 8 classrooms around Phoenix
+            right now, and what we learn from those teachers and students goes into each new
+            version. Next, we want to bring HANDS to more schools beyond Phoenix.
+          </p>
+        </div>
+        <a
+          class="btn btn-ghost mt-6"
+          href={site.links.hands}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Visit handslearning.com <Icon name="arrow" />
+        </a>
+      </section>
+
+      <section class="tile" aria-labelledby="outside-title">
+        <h2 id="outside-title" class="t-label">
+          Outside of code
+        </h2>
+        <div class="prose mt-4">
+          <p>
+            Away from the keyboard, I enjoy playing and learning to make video games, weightlifting,
+            backpacking, and {pics.length > 0 ? <a href="/pics">taking photos</a> : "taking photos"}
+            .
+          </p>
+          <p>I'm also a Starbucks Partner.</p>
+        </div>
+      </section>
+    </div>
+
+    <aside class="tile md:sticky md:top-6" aria-labelledby="glance-title">
+      <h2 id="glance-title" class="t-label">
+        At a glance
+      </h2>
+      <dl class="mt-4 flex flex-col gap-3">
+        {facts.map((fact) => (
+          <div>
+            <dt class="font-code text-[0.75rem] text-subtext0">{fact.label}</dt>
+            <dd class="text-small">{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <ul class="mt-5 flex flex-col gap-2 border-t border-surface0 pt-4 text-small">
+        {links.map((link) => (
+          <li>
+            <a
+              class="inline-flex items-center gap-2 text-subtext1 transition-colors hover:text-accent-ink"
+              href={link.href}
+              {...(link.icon === "mail" ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+            >
+              <Icon name={link.icon} />
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </aside>
+
+    {pics.length > 0 && (
+      <section class="tile md:col-span-3" aria-labelledby="pics-title">
+        <div class="flex items-center justify-between gap-2">
+          <h2 id="pics-title" class="t-label">
+            Recent photos
+          </h2>
+          <a class="link text-small" href="/pics">
+            All photos
+          </a>
+        </div>
+        <div class="mt-4 grid gap-3 sm:grid-cols-3">
+          {pics.slice(0, 3).map((pic) => (
+            <img
+              src={pic.src}
+              srcset={pic.srcset}
+              sizes="(min-width: 40rem) 33vw, 100vw"
+              width={pic.width}
+              height={pic.height}
+              alt={pic.alt}
+              loading="lazy"
+              decoding="async"
+              class="aspect-[4/3] w-full rounded-control border border-surface0 object-cover"
+            />
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+
+  <p class="mt-10 text-small text-subtext1">
+    <a class="link" href="/contact">
+      Get in touch
+    </a>{" "}
+    if you want to talk about HANDS or an internship.
+  </p>
+</Layout>
