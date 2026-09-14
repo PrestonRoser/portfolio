@@ -22,7 +22,7 @@ export const site = {
   analytics: {
     // Cloudflare Web Analytics site token. It's public (it ships in the page);
     // leave it empty to skip the beacon.
-    cloudflareToken: "",
+    cloudflareToken: "5b6546c1a3e24ba3aaa25a1436b95c86",
   },
   nav: [
     { href: "/about", label: "About" },
