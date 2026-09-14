@@ -43,14 +43,14 @@ snapshot.
 
 - `src/pages`: routes
 - `src/components`: Astro components and Svelte islands
-- `src/data`: site settings, experience, skills and LinkedIn posts
+- `src/data`: site settings, experience, skills, and LinkedIn posts
 - `src/content/projects`: project write-ups
 - `src/assets/projects`: optional cover images, named after the project file (`sqaas.webp` for
   `sqaas.mdx`). Cards without one skip the cover.
 - `src/icons/skills`: logos for the skills marquee, from [Simple Icons](https://simpleicons.org)
   (CC0) and [Devicon](https://devicon.dev) (MIT, see `LICENSE-devicon`)
 - `worker/index.js`: serves `/api/github`
-- `scripts/`: theme tokens, font download, GitHub snapshot, security headers and the output scan
+- `scripts/`: theme tokens, font download, GitHub snapshot, security headers, and the output scan
 
 ## Branches and environments
 
@@ -109,5 +109,5 @@ rather than kept in the repo. JetBrains Mono is from Fontsource.
 
 ## License
 
-The code is MIT licensed. The writing, project descriptions and images are mine, so please ask
+The code is MIT licensed. The writing, project descriptions, and images are mine, so please ask
 before reusing them.

@@ -25,7 +25,7 @@ export const experience: Role[] = [
     start: "May 2026",
     end: "Aug 2026",
     summary:
-      "Built document-batching software with SSRS, Azure DevOps and Azure CI/CD to replace legacy on-premise services, and a Copilot agent that improved QA audit efficiency by more than 80%.",
+      "Built document-batching software with SSRS, Azure DevOps, and Azure CI/CD to replace legacy on-premise services, and a Copilot agent that improved QA audit efficiency by more than 80%.",
   },
   {
     org: "Vestas",
