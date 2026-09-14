@@ -306,6 +306,12 @@
       font-weight: 500;
       color: var(--ctp-subtext1);
 
+      & svg {
+        flex: none;
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+
       &::after {
         content: "/";
         color: var(--ctp-overlay0);
@@ -394,36 +400,6 @@
     border: 1px solid var(--ctp-surface0);
     border-radius: 6px;
     background-color: var(--ctp-crust);
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      opacity: 0.75;
-      transition: opacity 300ms;
-      background:
-        radial-gradient(
-          60% 80% at 28% 30%,
-          color-mix(in oklab, var(--accent) 40%, transparent),
-          transparent 70%
-        ),
-        linear-gradient(var(--ctp-surface0) 1px, transparent 1px) 0 0 / 22px 22px,
-        linear-gradient(90deg, var(--ctp-surface0) 1px, transparent 1px) 0 0 / 22px 22px;
-      mask-image: linear-gradient(to top, transparent 5%, #000 70%);
-    }
-  }
-
-  .group:hover .cover::before {
-    opacity: 1;
-  }
-
-  .cover-path {
-    position: absolute;
-    bottom: 0.6rem;
-    left: 0.75rem;
-    font-family: var(--font-code);
-    font-size: 0.75rem;
-    color: var(--ctp-subtext1);
   }
 
   .post-list {

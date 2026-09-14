@@ -2,7 +2,7 @@ export const site = {
   name: "Preston Roser",
   url: "https://prestonroser.dev",
   description:
-    "Computer Science student at Arizona State University and co-founder of HANDS. Software automation, cloud systems, CI/CD and full-stack web.",
+    "Computer Science student at Arizona State University and co-founder of HANDS. Software automation, cloud systems, CI/CD, and full-stack web.",
   email: "prestonroser@gmail.com",
   location: {
     city: "Greeley, Colorado",
@@ -22,9 +22,10 @@ export const site = {
   analytics: {
     // Cloudflare Web Analytics site token. It's public (it ships in the page);
     // leave it empty to skip the beacon.
-    cloudflareToken: "",
+    cloudflareToken: "5b6546c1a3e24ba3aaa25a1436b95c86",
   },
   nav: [
+    { href: "/about", label: "About" },
     { href: "/projects", label: "Projects" },
     { href: "/posts", label: "Posts" },
     { href: "/contact", label: "Contact" },
