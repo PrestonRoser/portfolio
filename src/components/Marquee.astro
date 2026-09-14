@@ -1,17 +1,37 @@
 ---
 import { skills } from "../data/skills";
+
+const icons = import.meta.glob<string>("../icons/skills/*.svg", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+});
+const items = skills.map((skill) => ({
+  ...skill,
+  svg: icons[`../icons/skills/${skill.icon}.svg`],
+}));
 ---
 
 <div class="marquee">
   <ul class="marquee-track">
-    {skills.map((skill) => (
-      <li>{skill}</li>
+    {items.map(({ name, svg }) => (
+      <li>
+        <span class="flex items-center gap-2.5">
+          {svg && <span class="flex" aria-hidden="true" set:html={svg} />}
+          {name}
+        </span>
+      </li>
     ))}
   </ul>
   {/* The copy only exists to make the loop seamless, so screen readers skip it. */}
   <ul class="marquee-track" aria-hidden="true">
-    {skills.map((skill) => (
-      <li>{skill}</li>
+    {items.map(({ name, svg }) => (
+      <li>
+        <span class="flex items-center gap-2.5">
+          {svg && <span class="flex" set:html={svg} />}
+          {name}
+        </span>
+      </li>
     ))}
   </ul>
 </div>

@@ -17,6 +17,7 @@
     "block size-5 rounded-full ring-offset-2 ring-offset-mantle peer-checked:ring-2 peer-checked:ring-text peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-accent-ink";
 
   let open = $state(false);
+  let picker = $state<HTMLDivElement>();
   let flavor = $state<FlavorChoice>("system");
   let accent = $state<AccentChoice>("rolling");
 
@@ -86,9 +87,20 @@
   onkeydown={(event) => {
     if (event.key === "Escape") open = false;
   }}
+  onpointerdown={(event) => {
+    if (open && !picker?.contains(event.target as Node)) open = false;
+  }}
 />
 
-<div class="relative">
+<!-- Tabbing past the panel closes it, same as clicking outside. -->
+<div
+  class="relative"
+  bind:this={picker}
+  onfocusout={(event) => {
+    const next = event.relatedTarget as Node | null;
+    if (next && !picker?.contains(next)) open = false;
+  }}
+>
   <button
     type="button"
     class="flex items-center gap-2 rounded-control border border-surface1 px-2.5 py-1 text-small transition-colors hover:border-accent-ink"
