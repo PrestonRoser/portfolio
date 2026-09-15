@@ -150,8 +150,9 @@ async function refresh(deps, token, cacheKey) {
         "user-agent": "prestonroser.dev",
       },
       body: JSON.stringify({ query: QUERY }),
-      // Never follow a redirect while carrying the token.
-      redirect: "error",
+      // Never follow a redirect while carrying the token. Workers only support
+      // "follow" and "manual", so a redirect comes back as a 3xx and fails the ok check.
+      redirect: "manual",
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
     if (!upstream.ok) {

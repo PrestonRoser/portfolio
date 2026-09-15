@@ -1,5 +1,5 @@
 ---
-import { buildCommit } from "../lib/build";
+import { buildCommit, buildCommitSha } from "../lib/build";
 import { site } from "../data/site";
 
 const year = new Date().getFullYear();
@@ -11,7 +11,17 @@ const year = new Date().getFullYear();
       © {year} {site.name}
     </span>
     <span>{site.location.short}</span>
-    {buildCommit && <span title="Commit this build came from">{buildCommit}</span>}
+    {buildCommit && (
+      <a
+        class="transition-colors hover:text-text"
+        href={`${site.links.repo}/commit/${buildCommitSha}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Commit this build came from"
+      >
+        {buildCommit}
+      </a>
+    )}
     <span class="flex gap-4 sm:ml-auto">
       <a
         class="transition-colors hover:text-text"

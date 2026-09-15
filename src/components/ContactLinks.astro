@@ -3,7 +3,7 @@ import Icon from "./Icon.astro";
 import { site } from "../data/site";
 ---
 
-<div class="grid gap-3 sm:grid-cols-3">
+<div class="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
   <a class="contact-tile" href={`mailto:${site.email}`}>
     <span class="text-accent-ink">
       <Icon name="mail" size={20} />
@@ -24,5 +24,12 @@ import { site } from "../data/site";
     </span>
     <span class="font-semibold">LinkedIn</span>
     <span class="font-code text-[0.75rem] text-subtext0">in/prestonroser</span>
+  </a>
+  <a class="contact-tile" href={site.links.resume} target="_blank" rel="noopener">
+    <span class="text-accent-ink">
+      <Icon name="file" size={20} />
+    </span>
+    <span class="font-semibold">Résumé</span>
+    <span class="font-code text-[0.75rem] text-subtext0">PDF</span>
   </a>
 </div>
