@@ -151,7 +151,7 @@ test("the upstream call is fixed: nothing from the request reaches GitHub", asyn
     "user-agent",
   ]);
   assert.equal(upstream.init.headers.authorization, `Bearer ${TOKEN}`);
-  assert.equal(upstream.init.redirect, "error");
+  assert.equal(upstream.init.redirect, "manual");
   assertNoLeak(out);
 });
 
