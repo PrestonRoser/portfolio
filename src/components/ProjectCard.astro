@@ -27,9 +27,14 @@ const cover = Object.entries(covers).find(
 )?.[1].default;
 ---
 
-<article class:list={["tile group flex flex-col gap-4", className]}>
+<article
+  class:list={[
+    "tile group relative flex flex-col gap-4 transition-colors hover:border-surface2",
+    className,
+  ]}
+>
   {cover && (
-    <a class="cover" href={href} tabindex="-1" aria-hidden="true">
+    <div class="cover">
       <Image
         src={cover}
         alt=""
@@ -37,11 +42,11 @@ const cover = Object.entries(covers).find(
         sizes="(min-width: 48rem) 36rem, 100vw"
         class="absolute inset-0 size-full object-cover"
       />
-    </a>
+    </div>
   )}
   <div>
     <Heading class="text-h3 font-semibold">
-      <a class="transition-colors hover:text-accent-ink" href={href}>
+      <a class="card-link transition-colors group-hover:text-accent-ink" href={href}>
         {title}
       </a>
     </Heading>
