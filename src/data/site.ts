@@ -16,6 +16,8 @@ export const site = {
   },
   links: {
     github: "https://github.com/PrestonRoser",
+    repo: "https://github.com/PrestonRoser/portfolio",
+    resume: "/resume.pdf",
     linkedin: "https://www.linkedin.com/in/prestonroser/",
     hands: "https://handslearning.com",
   },

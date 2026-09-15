@@ -1,8 +1,8 @@
 import { execSync } from "node:child_process";
 
-function shortCommit() {
+function git(args: string) {
   try {
-    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] })
+    return execSync(`git ${args}`, { stdio: ["ignore", "pipe", "ignore"] })
       .toString()
       .trim();
   } catch {
@@ -11,4 +11,5 @@ function shortCommit() {
 }
 
 // Shown in the footer so it's obvious which build is live.
-export const buildCommit = shortCommit();
+export const buildCommitSha = git("rev-parse HEAD");
+export const buildCommit = buildCommitSha.slice(0, 7);
