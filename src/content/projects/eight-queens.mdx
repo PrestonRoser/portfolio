@@ -1,0 +1,18 @@
+---
+title: Eight Queens
+summary: A Java solver for the Eight Queens puzzle, searching permutations of the board and rejecting any arrangement where two queens share a diagonal.
+context: Class project
+period: Fall 2024
+tags: ["java", "algorithms"]
+order: 9
+---
+
+A solver for the Eight Queens puzzle, written for Data Structures and Algorithms.
+
+- Each candidate is a permutation of the eight columns, so no two queens can share a row or a
+  column by construction.
+- The diagonal check compares every pair of queens and rejects the arrangement when the distance
+  between their rows matches the distance between their columns.
+- Prints each solution it finds as a board of dots and queens.
+- The recursive permutation solver came with the assignment; the diagonal test and the output are
+  mine.

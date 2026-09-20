@@ -1,0 +1,16 @@
+---
+title: Tic-Tac-Toe Game Tree
+summary: A generic array-backed tree in Java, used to generate the complete game tree of tic-tac-toe positions.
+context: Class project
+period: Fall 2024
+tags: ["java", "data structures"]
+order: 8
+---
+
+A tree data structure built from scratch, then put to work on tic-tac-toe.
+
+- A generic `ArrayTree` stores an order-n tree in a flat array, finding parents and children by
+  index arithmetic instead of node references.
+- From an empty board, the generator recursively expands every legal move, alternating players
+  until the board fills.
+- A separate harness checks the tree operations against expected values.
