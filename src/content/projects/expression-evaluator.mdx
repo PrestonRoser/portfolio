@@ -1,0 +1,16 @@
+---
+title: Expression Evaluator
+summary: A C++ expression evaluator built on an abstract base class, with constant, unary, and binary nodes that evaluate and print themselves.
+context: Class project
+period: Spring 2025
+tags: ["c++", "oop"]
+order: 6
+---
+
+Completed an instructor-provided C++ skeleton into a working expression evaluator.
+
+- An abstract base class declares pure virtual methods for evaluating an expression and printing
+  it in infix and postfix form.
+- Constant, unary, and binary subclasses build the expression tree, so one call on the root
+  handles any shape of expression.
+- Virtual destructors free child nodes, which is what keeps the tree from leaking as it unwinds.
