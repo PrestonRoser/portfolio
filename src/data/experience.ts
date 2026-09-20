@@ -16,19 +16,19 @@ export const experience: Role[] = [
     start: "Aug 2025",
     url: "https://handslearning.com",
     summary:
-      "STEM education startup building hands-on learning kits with 3D-printed hardware for K–12 classrooms, piloted in 8 Phoenix-area classrooms. $6,000 in seed funding through ASU's Edson E+I program.",
+      "STEM education startup building hands-on learning kits with 3D-printed hardware for K–12 classrooms, piloted in 8 Phoenix-area classrooms. $6,000 in seed funding at ASU's Venture Devils Demo Day.",
   },
   {
     org: "Shamrock Foods Co.",
     role: "Systems Analyst Intern",
     place: "Phoenix, AZ",
     start: "May 2026",
-    end: "Aug 2026",
+    end: "Jul 2026",
     summary:
       "Built document-batching software with SSRS, Azure DevOps, and Azure CI/CD to replace legacy on-premise services, and a Copilot agent that improved QA audit efficiency by more than 80%.",
   },
   {
-    org: "Vestas",
+    org: "Vestas Blades America",
     role: "Production Associate Intern",
     place: "Weld County, CO",
     start: "Jun 2024",
