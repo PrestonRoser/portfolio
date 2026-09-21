@@ -18,6 +18,8 @@ const UPSTREAM_TIMEOUT_MS = 5000;
 const MAX_UPSTREAM_BYTES = 1_000_000;
 const TOKEN_SHAPE = /gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}/;
 const FRAGMENT_LENGTH = 16;
+const RECENT_DAYS = 10;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 if (
   !/^[A-Za-z0-9-]{1,39}$/.test(config.owner) ||
@@ -110,17 +112,51 @@ export function buildPayload(repos, now) {
     }
   }
 
-  commits.sort((a, b) => b.date.localeCompare(a.date));
   const measured = [...bytes].filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
   const total = measured.reduce((sum, [, n]) => sum + n, 0);
 
   return {
-    commits: commits.slice(0, COMMIT_LIMIT),
+    commits: pickCommits(commits, now),
     languages: measured
       .slice(0, 6)
       .map(([name, n]) => ({ name, percent: Math.round((n / total) * 1000) / 10 })),
     fetchedAt: new Date(now).toISOString(),
   };
+}
+
+/**
+ * Chooses which commits the tile shows, newest first.
+ *
+ * If only one repo has commits from the last RECENT_DAYS days, it gets every
+ * slot. If several do, the repo with the newest commit keeps half the slots
+ * (rounded up) and the rest go round-robin to the other recent repos, newest
+ * repo first. Older commits only fill slots that would otherwise be empty.
+ */
+export function pickCommits(commits, now, limit = COMMIT_LIMIT) {
+  const sorted = [...commits].sort((a, b) => b.date.localeCompare(a.date));
+  const cutoff = now - RECENT_DAYS * DAY_MS;
+
+  // Map keeps insertion order, so repos end up ordered by their newest commit.
+  const recent = new Map();
+  for (const commit of sorted) {
+    if (Date.parse(commit.date) < cutoff) continue;
+    if (!recent.has(commit.repo)) recent.set(commit.repo, []);
+    recent.get(commit.repo).push(commit);
+  }
+  const [lead = [], ...others] = recent.values();
+
+  const picked = lead.slice(0, others.length > 0 ? Math.ceil(limit / 2) : limit);
+  for (let i = 0; picked.length < limit; i += 1) {
+    const round = others.map((list) => list[i]).filter(Boolean);
+    if (round.length === 0) break;
+    picked.push(...round.slice(0, limit - picked.length));
+  }
+  for (const commit of sorted) {
+    if (picked.length >= limit) break;
+    if (!picked.includes(commit)) picked.push(commit);
+  }
+
+  return picked.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 function fromGraphQL(json, now) {

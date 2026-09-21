@@ -1,0 +1,66 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+  slug: string;
+  title: string;
+  href: string;
+  class?: string;
+}
+
+// The .webp files come from scripts/previews.mjs; a .png or .jpg is a hand-picked image.
+const previews = import.meta.glob<{ default: ImageMetadata }>(
+  "../assets/previews/*.{webp,png,jpg,jpeg}",
+  { eager: true },
+);
+
+const { slug, title, href, class: className } = Astro.props;
+const [path, module] =
+  Object.entries(previews).find(
+    ([file]) =>
+      file
+        .split("/")
+        .pop()
+        ?.replace(/\.\w+$/, "") === slug,
+  ) ?? [];
+const image = module?.default;
+const generated = path?.endsWith(".webp");
+const { host, pathname } = new URL(href);
+const label = host === "github.com" ? `${host}${pathname}` : host;
+const alt = !generated
+  ? `Preview image for ${title}`
+  : host === "github.com"
+    ? `GitHub repository card for ${title}`
+    : `Screenshot of the ${title} home page`;
+---
+
+{image && (
+  <a
+    class:list={["preview", className]}
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label={`Open ${label} in a new tab`}
+  >
+    <span class="preview-bar">
+      <span class="preview-dots" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+      <span class="min-w-0 truncate">{label}</span>
+      <span class="ml-auto shrink-0" aria-hidden="true">
+        ↗
+      </span>
+    </span>
+    <span class="preview-frame">
+      <Image
+        src={image}
+        alt={alt}
+        widths={[480, 720, 960, 1440]}
+        sizes="(min-width: 64rem) 34rem, 36rem"
+        class="block h-auto w-full"
+      />
+    </span>
+  </a>
+)}
