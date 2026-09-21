@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import config from "../src/data/github.json" with { type: "json" };
-import { ROUTE, handle } from "./github.js";
+import { ROUTE, handle, pickCommits } from "./github.js";
 import * as entry from "./index.js";
 
 // Expected failures log fixed warnings; keep the test output readable.
@@ -333,4 +333,61 @@ test("wrangler.jsonc routes only /api/* to the Worker and holds no variables", (
   assert.match(source, /"run_worker_first":\s*\[\s*"\/api\/\*"\s*\]/);
   assert.ok(!/"vars"\s*:/.test(source));
   assert.ok(!TOKEN_SHAPE.test(source));
+});
+
+// Commit selection for the tile. Hours are counted back from NOW.
+const NOW = Date.parse("2026-09-20T12:00:00Z");
+const commitAt = (repo, hoursAgo) => ({
+  repo,
+  sha: `${repo}-${hoursAgo}`,
+  date: new Date(NOW - hoursAgo * 3_600_000).toISOString(),
+});
+const shown = (commits) => commits.map((c) => c.sha);
+
+test("one recent repo gets every slot, even when other repos have older commits", () => {
+  const commits = [
+    ...[1, 2, 3, 4, 5, 6].map((h) => commitAt("a", h)),
+    commitAt("b", 11 * 24),
+    commitAt("b", 12 * 24),
+  ];
+  assert.deepEqual(shown(pickCommits(commits, NOW, 5)), ["a-1", "a-2", "a-3", "a-4", "a-5"]);
+});
+
+test("with two recent repos, the newest keeps three slots and the other fills the rest", () => {
+  const commits = [
+    ...[1, 2, 3, 4, 5].map((h) => commitAt("a", h)),
+    ...[30, 40, 50].map((h) => commitAt("b", h)),
+  ];
+  assert.deepEqual(shown(pickCommits(commits, NOW, 5)), ["a-1", "a-2", "a-3", "b-30", "b-40"]);
+});
+
+test("with three recent repos, the others share the remaining slots round-robin", () => {
+  const commits = [
+    ...[1, 2, 3, 4, 5].map((h) => commitAt("a", h)),
+    ...[10, 11, 12].map((h) => commitAt("b", h)),
+    ...[20, 21].map((h) => commitAt("c", h)),
+  ];
+  assert.deepEqual(shown(pickCommits(commits, NOW, 5)), ["a-1", "a-2", "a-3", "b-10", "c-20"]);
+});
+
+test("empty slots are filled by recency: leftover recent commits first, then older ones", () => {
+  const commits = [
+    ...[1, 2, 3, 4].map((h) => commitAt("a", h)),
+    commitAt("b", 30),
+    commitAt("c", 15 * 24),
+  ];
+  assert.deepEqual(shown(pickCommits(commits, NOW, 5)), ["a-1", "a-2", "a-3", "a-4", "b-30"]);
+
+  const sparse = [
+    commitAt("a", 1),
+    commitAt("b", 30),
+    commitAt("c", 15 * 24),
+    commitAt("c", 20 * 24),
+  ];
+  assert.deepEqual(shown(pickCommits(sparse, NOW, 5)), ["a-1", "b-30", "c-360", "c-480"]);
+});
+
+test("when nothing is recent the tile falls back to the newest commits overall", () => {
+  const commits = [commitAt("a", 20 * 24), commitAt("b", 11 * 24), commitAt("b", 30 * 24)];
+  assert.deepEqual(shown(pickCommits(commits, NOW, 2)), ["b-264", "a-480"]);
 });
