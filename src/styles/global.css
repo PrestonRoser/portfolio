@@ -402,6 +402,97 @@
     background-color: var(--ctp-crust);
   }
 
+  /*
+   * Project pages. Narrow screens read top to bottom and the preview comes after the
+   * write-up; wide screens pin it in a right column that grows with the window.
+   */
+  .project-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+
+    & > aside {
+      max-width: 36rem;
+    }
+
+    @media (min-width: 64rem) {
+      grid-template-columns: minmax(0, 65ch) clamp(24rem, 42%, 34rem);
+      grid-template-areas:
+        "head aside"
+        "body aside";
+      grid-template-rows: auto 1fr;
+      justify-content: space-between;
+      column-gap: 3.5rem;
+
+      & > aside {
+        max-width: none;
+      }
+
+      & > header {
+        grid-area: head;
+      }
+      & > aside {
+        grid-area: aside;
+      }
+      & > .prose {
+        grid-area: body;
+      }
+    }
+  }
+
+  /* A small browser window around a site screenshot; the whole window is the link. */
+  .preview {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--ctp-surface0);
+    border-radius: var(--radius-tile);
+    background-color: var(--ctp-mantle);
+    transition: border-color 150ms;
+
+    &:hover {
+      border-color: var(--ctp-surface2);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-ink);
+      outline-offset: 2px;
+    }
+  }
+
+  .preview-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--ctp-surface0);
+    font-family: var(--font-code);
+    font-size: 0.75rem;
+    color: var(--ctp-subtext0);
+    transition: color 150ms;
+
+    .preview:hover & {
+      color: var(--accent-ink);
+    }
+  }
+
+  .preview-dots {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.3rem;
+
+    & > span {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 999px;
+      background-color: var(--ctp-surface1);
+    }
+  }
+
+  .preview-frame {
+    display: block;
+    background-color: var(--ctp-crust);
+  }
+
   /* The title link stretches over its card, so the whole card is a single link. */
   .card-link {
     &::after {

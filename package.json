@@ -23,7 +23,8 @@
     "prebuild": "node scripts/fetch-fonts.mjs && node scripts/github-snapshot.mjs",
     "test": "node --test worker/*.test.js",
     "postbuild": "node scripts/security-headers.mjs && node scripts/scan-dist.mjs",
-    "og": "node scripts/og-image.mjs"
+    "og": "node scripts/og-image.mjs",
+    "previews": "node scripts/previews.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.0.1",

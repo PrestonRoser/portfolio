@@ -1,6 +1,7 @@
 ---
 import { render } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
+import ProjectPreview from "../../components/ProjectPreview.astro";
 import { getProjects } from "../../lib/content";
 
 export async function getStaticPaths() {
@@ -11,11 +12,12 @@ export async function getStaticPaths() {
 const { project } = Astro.props;
 const { Content } = await render(project);
 const { title, summary, tags, context, period, repo, url } = project.data;
+const previewHref = url ?? repo;
 ---
 
 <Layout title={title} description={summary}>
-  <article class="pt-12 sm:pt-16">
-    <header class="max-w-[65ch]">
+  <article class="project-layout pt-12 sm:pt-16">
+    <header>
       <p class="font-code text-small text-subtext0">
         {context} · {period}
       </p>
@@ -37,13 +39,18 @@ const { title, summary, tags, context, period, repo, url } = project.data;
         )}
       </p>
     </header>
-    <div class="prose mt-10">
+    <div class="prose">
       <Content />
     </div>
-    <p class="mt-12">
-      <a class="link text-small" href="/projects">
-        All projects
-      </a>
-    </p>
+    {previewHref && (
+      <aside class="lg:sticky lg:top-8 lg:self-start" aria-label="Site preview">
+        <ProjectPreview slug={project.id} title={title} href={previewHref} />
+      </aside>
+    )}
   </article>
+  <p class="mt-12">
+    <a class="link text-small" href="/projects">
+      All projects
+    </a>
+  </p>
 </Layout>
