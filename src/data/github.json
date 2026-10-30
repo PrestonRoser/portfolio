@@ -1,5 +1,6 @@
 {
   "owner": "prestonroser",
-  "repos": ["portfolio", "Hands-site", "rapid-rebrand"],
+  "repoLimit": 4,
+  "exclude": [],
   "commits": 5
 }
