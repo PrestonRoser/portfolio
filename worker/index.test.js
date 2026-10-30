@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import config from "../src/data/github.json" with { type: "json" };
-import { ROUTE, handle, pickCommits } from "./github.js";
+import { ROUTE, handle, pickCommits, pickRepos } from "./github.js";
 import * as entry from "./index.js";
 
 // Expected failures log fixed warnings; keep the test output readable.
@@ -22,37 +22,40 @@ const ORIGIN = "https://prestonroser.dev";
 const TOKEN_SHAPE = /gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}/;
 const EMPTY_STALE = { commits: [], languages: [], fetchedAt: null, stale: true };
 
-function graphql({ message = "feat: add tile", sha = "a".repeat(40) } = {}) {
-  return JSON.stringify({
-    data: Object.fromEntries(
-      config.repos.map((_, i) => [
-        `r${i}`,
-        {
-          defaultBranchRef: {
-            target: {
-              history: {
-                nodes: [
-                  {
-                    oid: sha,
-                    messageHeadline: message,
-                    committedDate: "2026-09-12T18:00:00Z",
-                    additions: 12,
-                    deletions: 3,
-                  },
-                ],
-              },
+const PUBLIC = { isPrivate: false, isFork: false, isArchived: false };
+
+function repoNode(name, { message = "feat: add tile", sha = "a".repeat(40), flags = PUBLIC } = {}) {
+  return {
+    name,
+    ...flags,
+    defaultBranchRef: {
+      target: {
+        history: {
+          nodes: [
+            {
+              oid: sha,
+              messageHeadline: message,
+              committedDate: "2026-09-12T18:00:00Z",
+              additions: 12,
+              deletions: 3,
             },
-          },
-          languages: {
-            edges: [
-              { size: 700, node: { name: "TypeScript" } },
-              { size: 300, node: { name: "Astro" } },
-            ],
-          },
+          ],
         },
-      ]),
-    ),
-  });
+      },
+    },
+    languages: {
+      edges: [
+        { size: 700, node: { name: "TypeScript" } },
+        { size: 300, node: { name: "Astro" } },
+      ],
+    },
+  };
+}
+
+const graphqlBody = (nodes) => JSON.stringify({ data: { user: { repositories: { nodes } } } });
+
+function graphql(options) {
+  return graphqlBody(["portfolio", "Hands-site"].map((name) => repoNode(name, options)));
 }
 
 function memoryCache() {
@@ -256,34 +259,42 @@ test("upstream data is validated and reshaped, never passed through", async () =
   const sha = "b".repeat(40);
   const hostile = {
     data: {
-      r0: {
-        defaultBranchRef: {
-          target: {
-            history: {
-              nodes: [
-                {
-                  oid: "not-a-sha",
-                  messageHeadline: "dropped",
-                  committedDate: "2026-09-12T00:00:00Z",
+      user: {
+        repositories: {
+          nodes: [
+            {
+              name: "portfolio",
+              ...PUBLIC,
+              defaultBranchRef: {
+                target: {
+                  history: {
+                    nodes: [
+                      {
+                        oid: "not-a-sha",
+                        messageHeadline: "dropped",
+                        committedDate: "2026-09-12T00:00:00Z",
+                      },
+                      {
+                        oid: sha,
+                        messageHeadline: `ctrl\u0000\u001b[31m\u202e${"y".repeat(300)}`,
+                        committedDate: "2026-09-11T00:00:00Z",
+                        additions: -5,
+                        deletions: "9",
+                        url: "https://evil.test",
+                        author: { email: "someone@example.com" },
+                      },
+                    ],
+                  },
                 },
-                {
-                  oid: sha,
-                  messageHeadline: `ctrl\u0000\u001b[31m\u202e${"y".repeat(300)}`,
-                  committedDate: "2026-09-11T00:00:00Z",
-                  additions: -5,
-                  deletions: "9",
-                  url: "https://evil.test",
-                  author: { email: "someone@example.com" },
-                },
-              ],
+              },
+              languages: {
+                edges: [
+                  { size: 10, node: { name: "<script>" } },
+                  { size: 5, node: { name: "C++" } },
+                  { size: 1e30, node: { name: "Go" } },
+                ],
+              },
             },
-          },
-        },
-        languages: {
-          edges: [
-            { size: 10, node: { name: "<script>" } },
-            { size: 5, node: { name: "C++" } },
-            { size: 1e30, node: { name: "Go" } },
           ],
         },
       },
@@ -299,12 +310,55 @@ test("upstream data is validated and reshaped, never passed through", async () =
   assert.ok(!/[\u0000-\u001f\u007f\u202a-\u202e]/.test(commit.message));
   assert.equal(commit.additions, 0);
   assert.equal(commit.deletions, 0);
-  assert.equal(commit.url, `https://github.com/${config.owner}/${config.repos[0]}/commit/${sha}`);
+  assert.equal(commit.url, `https://github.com/${config.owner}/portfolio/commit/${sha}`);
   assert.ok(!JSON.stringify(body).includes("evil.test"));
   assert.ok(!JSON.stringify(body).includes("someone@example.com"));
   assert.deepEqual(
     body.languages.map((l) => l.name),
     ["C++"],
+  );
+});
+
+test("private, forked, archived and badly named repos never reach the page", async () => {
+  const nodes = [
+    repoNode("private-repo", { flags: { ...PUBLIC, isPrivate: true }, message: "secret" }),
+    repoNode("forked-repo", { flags: { ...PUBLIC, isFork: true }, message: "fork" }),
+    repoNode("archived-repo", { flags: { ...PUBLIC, isArchived: true }, message: "archived" }),
+    repoNode("no-flags", { flags: {}, message: "unknown" }),
+    repoNode("../evil", { message: "path" }),
+    repoNode("shown-repo", { message: "public" }),
+  ];
+  const { deps } = setup({ upstream: () => new Response(graphqlBody(nodes)) });
+  const body = JSON.parse((await call(deps)).text);
+
+  assert.deepEqual(
+    body.commits.map((c) => [c.repo, c.message]),
+    [["shown-repo", "public"]],
+  );
+  for (const hidden of ["private-repo", "forked-repo", "archived-repo", "no-flags", "evil"]) {
+    assert.ok(!JSON.stringify(body).includes(hidden), hidden);
+  }
+});
+
+test("only the owner's public repos are requested, newest push first", async () => {
+  const { deps, calls } = setup();
+  await call(deps);
+  const { query } = JSON.parse(calls[0].init.body);
+  assert.ok(query.includes(`user(login:"${config.owner}")`));
+  assert.ok(query.includes("privacy:PUBLIC"));
+  assert.ok(query.includes("ownerAffiliations:OWNER"));
+  assert.ok(query.includes("orderBy:{field:PUSHED_AT,direction:DESC}"));
+});
+
+test("repo picking keeps push order, skips excluded repos and stops at the limit", () => {
+  const repos = ["a", "b", "c", "d"].map((name) => ({ name, ...PUBLIC }));
+  assert.deepEqual(
+    pickRepos(repos, 2, ["b"]).map((r) => r.name),
+    ["a", "c"],
+  );
+  assert.deepEqual(
+    pickRepos(repos, 10, []).map((r) => r.name),
+    ["a", "b", "c", "d"],
   );
 });
 

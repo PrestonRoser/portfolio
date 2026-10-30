@@ -20,27 +20,33 @@ const TOKEN_SHAPE = /gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}/;
 const FRAGMENT_LENGTH = 16;
 const RECENT_DAYS = 10;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const REPO_NAME = /^[A-Za-z0-9._-]{1,100}$/;
 
 if (
   !/^[A-Za-z0-9-]{1,39}$/.test(config.owner) ||
-  !Array.isArray(config.repos) ||
-  !config.repos.every((repo) => /^[A-Za-z0-9._-]{1,100}$/.test(repo))
+  !Array.isArray(config.exclude) ||
+  !config.exclude.every((repo) => REPO_NAME.test(repo))
 ) {
-  throw new Error("src/data/github.json: invalid owner or repo name");
+  throw new Error("src/data/github.json: invalid owner or excluded repo name");
 }
 
 const COMMIT_LIMIT = Number.isInteger(config.commits)
   ? Math.min(Math.max(config.commits, 1), 20)
   : 5;
 
-const QUERY = `query{${config.repos
-  .map(
-    (repo, i) =>
-      `r${i}:repository(owner:"${config.owner}",name:"${repo}"){` +
-      `defaultBranchRef{target{...on Commit{history(first:${COMMIT_LIMIT}){nodes{oid messageHeadline committedDate additions deletions}}}}}` +
-      `languages(first:10,orderBy:{field:SIZE,direction:DESC}){edges{size node{name}}}}`,
-  )
-  .join("")}}`;
+const REPO_LIMIT = Number.isInteger(config.repoLimit)
+  ? Math.min(Math.max(config.repoLimit, 1), 10)
+  : 4;
+
+// The most recently pushed public repos. Extra ones are requested so excluded
+// repos don't eat into the limit.
+const QUERY =
+  `query{user(login:"${config.owner}"){repositories(` +
+  `first:${Math.min(REPO_LIMIT + config.exclude.length, 100)},privacy:PUBLIC,ownerAffiliations:OWNER,` +
+  `isFork:false,isArchived:false,orderBy:{field:PUSHED_AT,direction:DESC}){nodes{` +
+  `name isPrivate isFork isArchived ` +
+  `defaultBranchRef{target{...on Commit{history(first:${COMMIT_LIMIT}){nodes{oid messageHeadline committedDate additions deletions}}}}}` +
+  `languages(first:10,orderBy:{field:SIZE,direction:DESC}){edges{size node{name}}}}}}}`;
 
 const EMPTY = Object.freeze({ commits: [], languages: [], fetchedAt: null });
 
@@ -83,13 +89,35 @@ export async function handle(request, deps) {
     : respond(request.method, EMPTY, { stale: true, status: 503, token });
 }
 
+/** Whether a repo name is well-formed and not excluded in github.json. */
+export function showsRepo(name, exclude = config.exclude) {
+  return typeof name === "string" && REPO_NAME.test(name) && !exclude.includes(name);
+}
+
+/**
+ * Picks the repos to show from a newest-pushed-first list. GitHub is already
+ * asked for public, non-fork, non-archived repos only, but a private repo must
+ * never reach the page, so each flag is checked again here.
+ */
+export function pickRepos(repos, limit = REPO_LIMIT, exclude = config.exclude) {
+  return repos
+    .filter(
+      (r) =>
+        r?.isPrivate === false &&
+        r.isFork === false &&
+        r.isArchived === false &&
+        showsRepo(r.name, exclude),
+    )
+    .slice(0, limit);
+}
+
 /** Validates and reshapes commit and language data. Shared with scripts/github-snapshot.mjs. */
 export function buildPayload(repos, now) {
   const commits = [];
   const bytes = new Map();
 
   for (const { repo, commits: rawCommits, languages } of repos) {
-    if (!config.repos.includes(repo)) continue;
+    if (!showsRepo(repo)) continue;
 
     for (const c of Array.isArray(rawCommits) ? rawCommits : []) {
       const sha = typeof c?.oid === "string" && /^[0-9a-f]{40}$/.test(c.oid) ? c.oid : null;
@@ -160,15 +188,13 @@ export function pickCommits(commits, now, limit = COMMIT_LIMIT) {
 }
 
 function fromGraphQL(json, now) {
+  const nodes = json?.data?.user?.repositories?.nodes;
   return buildPayload(
-    config.repos.map((repo, i) => {
-      const node = json?.data?.[`r${i}`];
-      return {
-        repo,
-        commits: node?.defaultBranchRef?.target?.history?.nodes,
-        languages: (node?.languages?.edges ?? []).map((edge) => [edge?.node?.name, edge?.size]),
-      };
-    }),
+    pickRepos(Array.isArray(nodes) ? nodes : []).map((node) => ({
+      repo: node.name,
+      commits: node.defaultBranchRef?.target?.history?.nodes,
+      languages: (node.languages?.edges ?? []).map((edge) => [edge?.node?.name, edge?.size]),
+    })),
     now,
   );
 }
