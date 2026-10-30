@@ -8,7 +8,7 @@
 // an empty one) rather than failing the build.
 import { existsSync, statSync, writeFileSync } from "node:fs";
 import config from "../src/data/github.json" with { type: "json" };
-import { buildPayload } from "../worker/github.js";
+import { buildPayload, pickRepos, showsRepo } from "../worker/github.js";
 
 const OUT = new URL("../src/data/github-snapshot.json", import.meta.url);
 const SITE_API = "https://prestonroser.dev/api/github";
@@ -28,7 +28,7 @@ async function fromSite() {
   const commits = (Array.isArray(data.commits) ? data.commits : [])
     .filter(
       (c) =>
-        config.repos.includes(c?.repo) &&
+        showsRepo(c?.repo) &&
         /^[0-9a-f]{7}$/.test(c.sha) &&
         typeof c.message === "string" &&
         Number.isSafeInteger(c.additions) &&
@@ -59,8 +59,18 @@ async function fromGitHub() {
   const headers = { accept: "application/vnd.github+json", "user-agent": "prestonroser.dev build" };
   const api = (path) => getJson(`https://api.github.com${path}`, headers);
 
+  const listed = await api(`/users/${config.owner}/repos?type=owner&sort=pushed&per_page=100`);
+  const shown = pickRepos(
+    (Array.isArray(listed) ? listed : []).map((r) => ({
+      name: r?.name,
+      isPrivate: r?.private,
+      isFork: r?.fork,
+      isArchived: r?.archived,
+    })),
+  );
+
   const repos = [];
-  for (const repo of config.repos) {
+  for (const { name: repo } of shown) {
     const list = await api(`/repos/${config.owner}/${repo}/commits?per_page=${config.commits}`);
     const commits = [];
     for (const item of list.slice(0, config.commits)) {
